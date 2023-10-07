@@ -1,157 +1,146 @@
-import paquetePersona.persona;
+import packagePerson.person;
 
 import java.io.*;
 import java.util.*;
 
+public class principal {
 
-
-
-
-public class principal{
-
+    /**
+     * The main entry point of the program.
+     *
+     * @param args Command-line arguments passed to the program. This should be a file name (including its relative/absolute path).
+     * @throws IOException If an I/O error occurs during program execution.
+     */
     public static void main (String[] args) throws IOException {
 
-        String nombreDelArchivo = "0";
 
-        //  Verificamos que el argumento insertado contiene un formato apto
+        // == FILE VALIDATION PHASE ==
+
+        // The reserved variable is initialized to store the file name
+        String nameOfFile = "0";
+
+        // Verifies that the inserted argument contains a valid format
         if (args.length != 1) {
-            System.out.println("Por favor, proporciona el nombre del archivo como argumento." +
-                               "\nRecuerda que se el nombre del archivo contiene espacios debe ser anadido entre comillas: \" \"");
+
+            System.out.println("Please provide the file name as an argument" +
+                               "\nRemember that if the file name contains spaces it must be added between quotes: \" \"");
             System.exit(1);
-        }else{
-            // Capturamos el nombre del archivo y eliminamos todo espacio al inicio y final
-            nombreDelArchivo = args[0].trim();
+
+        } else {
+
+            // Capture the file name and remove all spaces at the beginning and end
+            nameOfFile = args[0].trim();
+
         }
 
-        // Verificar si el archivo no existe
-        File ifile = new File(nombreDelArchivo);
+        // Check if the file does not exist
+        File ifile = new File(nameOfFile);
         if (!ifile.exists()) {
-            System.out.println("El archivo '" + nombreDelArchivo + "' no existe.");
+
+            System.out.println("The file '" + nameOfFile + "' does not exist.");
             System.exit(1);
-        }
-
-        // Lectura de datos del fichero dado
-        List<String> datos = leerDatosDesdeArchivo (nombreDelArchivo);
-
-        // imprimo datos capturados
-        for (int i = 0; i < datos.size(); i++) {
-            System.out.println("Fila " + (i + 1) + ": " + datos.get(i));
-        }
-
-        // Genero una instacia de cada persona por fila
-        persona[] ipeople = new persona[datos.size()];
-        for (int i = 0; i < datos.size(); i++) {
-
-            // Dividimos filas por *
-            String[] partes = datos.get(i).split("\\*");
-            // Creamos personas
-            ipeople[i]  = new persona (partes[0].trim(), partes[1].trim(), partes[2].trim());
 
         }
 
 
-        // creo un array de perosonas
-        persona[] ipersona = new persona[2];
+        // == FILE DATA READING PHASE ==
 
-        ipersona [0]  = new persona ("Brais", "Alonso Almuina", "10/03/2001");
-        ipersona [1] = new persona ("Felipe", "Martin Rey", "04/03/2000");
+        // A list of Strings is loaded with the data from the target file. Each row in the file is stored in a string list row.
+        List<String> data1 = readDataFromFile(nameOfFile);
 
+        // One person instance is generated per row read from the file
+        person[] ipeople = new person[data1.size()];
+        for (int i = 0; i < data1.size(); i++) {
 
-        // Imprimo datos almacenados
-        for (int i = 0; i < ipeople.length; i++) {
-            System.out.println("Persona " + (i + 1) + ": Nombre-> " + ipeople[i].nombre + " ,Apellidos-> " + ipeople[i].apellidos + ", Nacimiento-> " + ipeople[i].fechaNacimiento);
-        }
-
-
-        // pasamos el array a tipo list para poder ordenar sus elementos con el Collections.sort();
-        List<persona> ilistaPersonas = new ArrayList<>();
-        List<persona> listaPersonas = new ArrayList<>();
-
-        for (persona apersona : ipeople) {
-            ilistaPersonas.add(apersona);
-        }
-        for (persona apersona : ipersona) {
-            listaPersonas.add(apersona);
-        }
-
-        Collections.sort(ilistaPersonas);
-        Collections.sort(listaPersonas);
-
-
-
-
-        // Imprimir la lista ordenada
-        for (persona bpersona : ilistaPersonas) {
-            System.out.println(bpersona.nombre);
-        }
-        // Imprimir la lista ordenada
-        for (persona bpersona : listaPersonas) {
-            System.out.println(bpersona.nombre);
-        }
-
-
-
-
-
-        // Me quede aqui: conversion de lista s y paso a fichero.
-        // Llena la lista ilistaPersonas con objetos Persona...
-
-
-        List<String> datos2 = new ArrayList<>();
-
-        for (persona ypersona : ilistaPersonas) {
-
-            datos2.add(ypersona.nombre + " " + ypersona.apellidos + " " + ypersona.fechaNacimiento);
+            // The groups of strings delimited by the character "*" are divided by rows into a new array. These contain the name, surname and date of birth.
+            String[] partsOfData = data1.get(i).split("\\*");
+            // A new person instance is constructed
+            ipeople[i]  = new person (partsOfData[0].trim(), partsOfData[1].trim(), partsOfData[2].trim());
 
         }
 
 
-        // sobre escribimos el archivo:
-        writeDataToFile(nombreDelArchivo, datos2);
+        // == DATA SORTING PHASE ==
+
+        // The array is passed to list type to be able to order its elements with the instruction: Collections.sort();
+        List<person> ilistaPerson = new ArrayList<>();
+
+        for (person aperson : ipeople) {
+            ilistaPerson.add(aperson);
+        }
+
+        Collections.sort(ilistaPerson);
+
+        // The ordered list is printed
+        for (person bperson : ilistaPerson) {
+            System.out.println("Name: " + bperson.name + ", Last name: " + bperson.lastName + ", Date of birth: " + bperson.dateOfBirth);
+        }
 
 
+        // == DATA OVERWRITING PHASE ==
+
+        List<String> data2 = new ArrayList<>();
+
+        for (person yperson : ilistaPerson) {
+
+            data2.add(yperson.name + " " + yperson.lastName + " " + yperson.dateOfBirth);
+
+        }
+
+        writeDataToFile(nameOfFile, data2);
 
 
+    } // end of main
 
 
+    /**
+     * This method is takes care of read data of existing file.
+     *
+     * The file to be reading must have an ISO-8859-1 character set.
+     *
+     * @param fileName - File name (including its relative/absolute path).
+     * @return A list of strings containing the data read from the file. Where each read file row represents an element of list of strings.
+     * @throws IOException - If an I/O error occurs while writing the file.
+     */
+    public static List<String> readDataFromFile(String fileName) throws IOException {
 
-    } // main
+        List<String> data = new ArrayList<>();
 
-    public static List<String> leerDatosDesdeArchivo(String nombreArchivo) throws IOException {
-        List<String> datos = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "ISO-8859-1"))) {
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(nombreArchivo), "ISO-8859-1"))) {
-        // try (BufferedReader br = new BufferedReader(new FileReader(nombreArchivo))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                datos.add(linea);
+            String row;
+            while ((row = br.readLine()) != null) {
+                data.add(row);
             }
+
         }
 
-        return datos;
+        return data;
+
     }
 
 
     /**
-     * This method is takes care of write data overwriting a file exist.
+     * This method is takes care of write data, overwriting an existing file.
      *
-     * El archivo que se va a sobrescribir debe tener un juego de caracteres ISO-8859-1.
+     * The file to be overwritten must have an ISO-8859-1 character set.
      *
-     * @param nombreArchivo Descripción del primer parámetro.
-     * @param parametro2 Descripción del segundo parámetro.
-     * @return Descripción del valor de retorno (si el método devuelve algo).
-     * @throws ExcepcionPersonalizada Descripción de la excepción (si el método la lanza).
+     * @param fileName - File name (including its relative/absolute path).
+     * @param data - Contains an array with the data of each row to fill the file.
+     * @return Nothing.
+     * @throws IOException - If an I/O error occurs while writing the file.
      */
-    public static void writeDataToFile (String nombreArchivo, List<String> datos) throws IOException {
-        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(nombreArchivo), "ISO-8859-1"))) {
-        // try (BufferedWriter bw = new BufferedWriter(new FileWriter(nombreArchivo))) {
-            for (String linea : datos) {
-                bw.write(linea);
+    public static void writeDataToFile (String fileName, List<String> data) throws IOException {
+
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "ISO-8859-1"))) {
+
+            for (String row : data) {
+                bw.write(row);
                 bw.newLine();
             }
+
         }
+
     }
 
-
-
-}// class
+} // end of class
